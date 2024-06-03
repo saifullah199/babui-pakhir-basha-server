@@ -8,7 +8,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors());
+
+const corsOptions = {
+  origin: ["http://localhost:5173"],
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
@@ -29,8 +35,9 @@ async function run() {
     const agreementCollection = client
       .db("apartmentDB")
       .collection("agreement");
+    const userCollection = client.db("apartmentDB").collection("users");
 
-    // apartment related api
+    // rooms related api
     // get rooms
     app.get("/rooms", async (req, res) => {
       const result = await roomCollection.find().toArray();
@@ -62,6 +69,64 @@ async function run() {
       const userItem = req.body;
       console.log(userItem);
       const result = await agreementCollection.insertOne(userItem);
+      res.send(result);
+    });
+
+    // users related apis
+    // app.post("/users", async (req, res) => {
+    //   const userInfo = req.body;
+    //   console.log(userInfo);
+    //   const result = await userCollection.insertOne(userInfo);
+    //   res.send(result);
+    // });
+
+    // save a user data to db
+    app.put("/user", async (req, res) => {
+      const user = req.body;
+      const isExist = await userCollection.findOne({ email: user?.email });
+      if (isExist) return res.send(isExist);
+
+      const options = { upsert: true };
+      const query = { email: user?.email };
+      const updateDoc = {
+        $set: { ...user },
+      };
+
+      const result = await userCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
+    // get a user info by email from db
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await userCollection.findOne({ email });
+      res.send(result);
+    });
+
+    // app.get("/user/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   console.log("Fetching user info for email:", email);
+
+    //   try {
+    //     const user = await userCollection.findOne({ email: email });
+
+    //     if (!user) {
+    //       return res.status(404).send({ error: "User not found" });
+    //     }
+
+    //     res.send({ role: user.role });
+    //   } catch (error) {
+    //     console.error("Error fetching user info:", error);
+    //     res
+    //       .status(500)
+    //       .send({ error: "An error occurred while fetching user info" });
+    //   }
+    // });
+
+    // get all users data from db
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
 
