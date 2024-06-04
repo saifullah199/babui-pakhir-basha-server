@@ -9,12 +9,12 @@ const port = process.env.PORT || 5000;
 
 // middlewares
 
-const corsOptions = {
-  origin: ["http://localhost:5173"],
-  credentials: true,
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+// const corsOptions = {
+//   origin: ["http://localhost:5173"],
+//   credentials: true,
+//   optionSuccessStatus: 200,
+// };
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
@@ -65,6 +65,14 @@ async function run() {
     });
 
     // agreement related apis
+
+    // get all agreement data from db
+    app.get("/agreement", async (req, res) => {
+      const result = await agreementCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post agreement data to db
     app.post("/agreements", async (req, res) => {
       const userItem = req.body;
       console.log(userItem);
@@ -97,36 +105,28 @@ async function run() {
     });
 
     // get a user info by email from db
-    app.get("/users/:email", async (req, res) => {
+    app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       console.log(email);
-      const result = await userCollection.findOne({ email });
+      const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
-
-    // app.get("/user/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   console.log("Fetching user info for email:", email);
-
-    //   try {
-    //     const user = await userCollection.findOne({ email: email });
-
-    //     if (!user) {
-    //       return res.status(404).send({ error: "User not found" });
-    //     }
-
-    //     res.send({ role: user.role });
-    //   } catch (error) {
-    //     console.error("Error fetching user info:", error);
-    //     res
-    //       .status(500)
-    //       .send({ error: "An error occurred while fetching user info" });
-    //   }
-    // });
 
     // get all users data from db
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // update agreement status and role
+    app.patch("/agreement/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedStatus = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: updatedStatus.status },
+      };
+      const result = await agreementCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
