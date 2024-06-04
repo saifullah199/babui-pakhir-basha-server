@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
+const {} = require("mongodb");
 
 const port = process.env.PORT || 5000;
 
@@ -110,6 +111,7 @@ async function run() {
       console.log(email);
       const result = await userCollection.findOne({ email: email });
       res.send(result);
+      console.log(result);
     });
 
     // get all users data from db
@@ -118,7 +120,7 @@ async function run() {
       res.send(result);
     });
 
-    // update agreement status and role
+    // update agreement status
     app.patch("/agreement/:id", async (req, res) => {
       const id = req.params.id;
       const updatedStatus = req.body;
@@ -127,6 +129,18 @@ async function run() {
         $set: { status: updatedStatus.status },
       };
       const result = await agreementCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // update user role
+    app.patch("/user/:role", async (req, res) => {
+      const id = req.params.id;
+      const updateRole = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { role: updateRole.role },
+      };
+      const result = await userCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
