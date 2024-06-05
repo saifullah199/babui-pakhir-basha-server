@@ -81,6 +81,39 @@ async function run() {
       res.send(result);
     });
 
+    // update agreement status
+    app.patch("/agreement/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedStatus = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: updatedStatus.status },
+      };
+      const result = await agreementCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // update user role
+    app.patch("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const updateRole = req.body.role;
+      const query = { email: email };
+      const updateDoc = {
+        $set: { role: updateRole },
+      };
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+      console.log(result);
+    });
+
+    // get member role by email from db
+    app.get("/member/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await agreementCollection.findOne({ email: email });
+      res.send(result);
+    });
+
     // users related apis
     // app.post("/users", async (req, res) => {
     //   const userInfo = req.body;
@@ -105,42 +138,17 @@ async function run() {
       res.send(result);
     });
 
-    // get a user info by email from db
+    // get a user role by email from db
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       console.log(email);
       const result = await userCollection.findOne({ email: email });
       res.send(result);
-      console.log(result);
     });
 
     // get all users data from db
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
-      res.send(result);
-    });
-
-    // update agreement status
-    app.patch("/agreement/:id", async (req, res) => {
-      const id = req.params.id;
-      const updatedStatus = req.body;
-      const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: { status: updatedStatus.status },
-      };
-      const result = await agreementCollection.updateOne(query, updateDoc);
-      res.send(result);
-    });
-
-    // update user role
-    app.patch("/user/:role", async (req, res) => {
-      const id = req.params.id;
-      const updateRole = req.body;
-      const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: { role: updateRole.role },
-      };
-      const result = await userCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
