@@ -93,6 +93,15 @@ async function run() {
       res.send(result);
     });
 
+    // get a agreement by email address
+    app.get("/person/:email", async (req, res) => {
+      console.log(req.params.email);
+      const result = await agreementCollection
+        .find({ email: req.params.email })
+        .toArray();
+      res.send(result);
+    });
+
     // update user role
     app.patch("/user/:email", async (req, res) => {
       const email = req.params.email;
@@ -107,12 +116,12 @@ async function run() {
     });
 
     // get member role by email from db
-    app.get("/member/:email", async (req, res) => {
-      const email = req.params.email;
-      console.log(email);
-      const result = await agreementCollection.findOne({ email: email });
-      res.send(result);
-    });
+    // app.get("/member/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   console.log(email);
+    //   const result = await agreementCollection.findOne({ email: email });
+    //   res.send(result);
+    // });
 
     // users related apis
     // app.post("/users", async (req, res) => {
