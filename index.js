@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const {} = require("mongodb");
 
@@ -37,7 +38,10 @@ async function run() {
       .db("apartmentDB")
       .collection("agreement");
     const userCollection = client.db("apartmentDB").collection("users");
-
+    const announceCollection = client
+      .db("apartmentDB")
+      .collection("announcements");
+    const couponCollection = client.db("apartmentDB").collection("coupons");
     // rooms related api
     // get rooms
     app.get("/rooms", async (req, res) => {
@@ -95,10 +99,18 @@ async function run() {
 
     // get a agreement by email address
     app.get("/person/:email", async (req, res) => {
-      console.log(req.params.email);
+      const email = req.params.email;
+      console.log(email);
       const result = await agreementCollection
-        .find({ email: req.params.email })
+        .find({ userEmail: email })
         .toArray();
+      res.send(result);
+    });
+
+    app.get("/carts", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await agreementCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -114,14 +126,6 @@ async function run() {
       res.send(result);
       console.log(result);
     });
-
-    // get member role by email from db
-    // app.get("/member/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   console.log(email);
-    //   const result = await agreementCollection.findOne({ email: email });
-    //   res.send(result);
-    // });
 
     // users related apis
     // app.post("/users", async (req, res) => {
@@ -158,6 +162,50 @@ async function run() {
     // get all users data from db
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    //  payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      console.log(amount, "amount inside the intent");
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    // announcement related api
+    // get all announcements
+    app.get("/announcements", async (req, res) => {
+      const result = await announceCollection.find().toArray();
+      res.send(result);
+    });
+    // post an announcement
+    app.post("/announces", async (req, res) => {
+      const announcement = req.body;
+      const result = await announceCollection.insertOne(announcement);
+      res.send(result);
+    });
+
+    // coupon related api
+
+    // get all coupons for
+
+    app.get("/coupons", async (req, res) => {
+      const result = await couponCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post a coupon
+    app.post("/coupons", async (req, res) => {
+      const announcement = req.body;
+      const result = await couponCollection.insertOne(announcement);
       res.send(result);
     });
 
