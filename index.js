@@ -82,11 +82,38 @@ async function run() {
     });
 
     // post agreement data to db
+    // app.post("/agreements", async (req, res) => {
+    //   const userItem = req.body;
+    //   console.log(userItem);
+    //   const result = await agreementCollection.insertOne(userItem);
+    //   res.send(result);
+    // });
+
     app.post("/agreements", async (req, res) => {
       const userItem = req.body;
       console.log(userItem);
-      const result = await agreementCollection.insertOne(userItem);
-      res.send(result);
+
+      const { userEmail } = userItem;
+
+      try {
+        // Check if the user already has an agreement
+        const existingAgreement = await agreementCollection.findOne({
+          userEmail,
+        });
+
+        if (existingAgreement) {
+          return res
+            .status(400)
+            .send({ message: "You have already requested for an apartment" });
+        }
+
+        // Insert new agreement
+        const result = await agreementCollection.insertOne(userItem);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
     });
 
     // update agreement status
