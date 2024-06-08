@@ -82,39 +82,66 @@ async function run() {
     });
 
     // post agreement data to db
-    // app.post("/agreements", async (req, res) => {
-    //   const userItem = req.body;
-    //   console.log(userItem);
-    //   const result = await agreementCollection.insertOne(userItem);
-    //   res.send(result);
-    // });
-
     app.post("/agreements", async (req, res) => {
       const userItem = req.body;
       console.log(userItem);
-
-      const { userEmail } = userItem;
-
-      try {
-        // Check if the user already has an agreement
-        const existingAgreement = await agreementCollection.findOne({
-          userEmail,
-        });
-
-        if (existingAgreement) {
-          return res
-            .status(400)
-            .send({ message: "You have already requested for an apartment" });
-        }
-
-        // Insert new agreement
-        const result = await agreementCollection.insertOne(userItem);
-        res.send(result);
-      } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
+      const result = await agreementCollection.insertOne(userItem);
+      res.send(result);
     });
+
+    // app.put("/agreements", async (req, res) => {
+    //   const userItem = req.body;
+    //   const isExist = await agreementCollection.findOne({
+    //     email: userItem?.email,
+    //   });
+    //   if (isExist)
+    //     return res
+    //       .status(400)
+    //       .send({ message: "You have already requested for an apartment" });
+
+    //   // const result = await agreementCollection.insertOne(user);
+    //   // res.send(result);
+    //   const options = { upsert: true };
+    //   const query = { email: user?.email };
+    //   const updateDoc = {
+    //     $set: { ...userItem },
+    //   };
+
+    //   const result = await agreementCollection.updateOne(
+    //     query,
+    //     updateDoc,
+    //     options
+    //   );
+    //   res.send(result);
+
+    // });
+
+    // app.put("/agreements", async (req, res) => {
+    //   const userItem = req.body;
+    //   const query = {
+    //     email: userItem.email,
+    //     apartment_no: userItem.apartment_no,
+    //   };
+
+    //   const isExist = await agreementCollection.findOne(query);
+    //   if (isExist) {
+    //     return res
+    //       .status(400)
+    //       .send({ message: "You have already requested for this apartment" });
+    //   }
+
+    //   const options = { upsert: true };
+    //   const updateDoc = {
+    //     $set: { ...userItem },
+    //   };
+
+    //   const result = await agreementCollection.updateOne(
+    //     query,
+    //     updateDoc,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
 
     // update agreement status
     app.patch("/agreement/:id", async (req, res) => {
